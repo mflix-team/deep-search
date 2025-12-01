@@ -1,0 +1,10 @@
+altgraph==0.17.5
+colorama==0.4.6
+importlib_metadata==8.7.0
+macholib==1.16.4
+orjson==3.11.4
+packaging==25.0
+pyinstaller==6.17.0
+pyinstaller-hooks-contrib==2025.10
+tqdm==4.67.1
+zipp==3.23.0

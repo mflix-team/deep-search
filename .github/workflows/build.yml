@@ -1,0 +1,68 @@
+# This workflow will build executables for multiple platforms
+
+name: Build Executables
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.9"]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build with PyInstaller (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          pyinstaller --onefile \
+            --name deep-search \
+            --add-data "requirements.txt:." \
+            --hidden-import colorama \
+            --hidden-import tqdm \
+            --hidden-import orjson \
+            --console \
+            app.py
+
+      - name: Build with PyInstaller (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          pyinstaller --onefile `
+            --name deep-search `
+            --add-data "requirements.txt;." `
+            --hidden-import colorama `
+            --hidden-import tqdm `
+            --hidden-import orjson `
+            --console `
+            app.py
+
+      - name: Upload artifact (Linux/macOS)
+        if: runner.os != 'Windows'
+        uses: actions/upload-artifact@v3
+        with:
+          name: deep-search-${{ matrix.os }}
+          path: dist/deep-search
+
+      - name: Upload artifact (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v3
+        with:
+          name: deep-search-${{ matrix.os }}
+          path: dist/deep-search.exe

@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.spec
+*.egg
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Output files
+file_tree.json
+file_list.json
+test_tree.json
+test_list.json
+*_tree.json
+*_list.json
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
