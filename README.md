@@ -13,6 +13,16 @@
 
 ## 安装
 
+### 下载可执行文件（推荐）
+
+直接从 [Releases](https://github.com/mflix-team/deep-search/releases) 页面下载对应平台的可执行文件：
+
+- **Windows**: `deep-search-windows-x64.exe`
+- **macOS**: `deep-search-macos-arm64`
+- **Linux**: `deep-search-linux-x64`
+
+下载后即可直接运行，无需安装 Python 环境。
+
 ### 从源代码运行
 
 ```bash
@@ -23,20 +33,53 @@ pip install -r requirements.txt
 python app.py
 ```
 
-### 使用打包版本
-
-```bash
-# 打包程序
-chmod +x build.sh
-./build.sh
-
-# 运行打包后的程序
-./dist/deep-search
-```
-
 ## 使用方法
 
-### 基本用法
+### 使用可执行文件
+
+**Windows**:
+```cmd
+# 扫描当前目录
+deep-search-windows-x64.exe
+
+# 扫描指定目录
+deep-search-windows-x64.exe C:\Users\YourName\Documents
+
+# 自定义输出
+deep-search-windows-x64.exe C:\path\to\scan --output mydata -v
+```
+
+**macOS**:
+```bash
+# 添加执行权限（仅首次）
+chmod +x deep-search-macos-arm64
+
+# 扫描当前目录
+./deep-search-macos-arm64
+
+# 扫描指定目录
+./deep-search-macos-arm64 ~/Documents
+
+# 自定义输出
+./deep-search-macos-arm64 /path/to/scan --output mydata -v
+```
+
+**Linux**:
+```bash
+# 添加执行权限（仅首次）
+chmod +x deep-search-linux-x64
+
+# 扫描当前目录
+./deep-search-linux-x64
+
+# 扫描指定目录
+./deep-search-linux-x64 /home/user/documents
+
+# 自定义输出
+./deep-search-linux-x64 /path/to/scan --output mydata -v
+```
+
+### 使用 Python 脚本
 
 ```bash
 # 扫描当前目录
@@ -51,8 +94,13 @@ python app.py ~/Documents
 
 ### 高级选项
 
+所有平台的可执行文件都支持以下选项：
+
 ```bash
-# 自定义输出文件名
+# 自定义输出文件名（可执行文件示例）
+./deep-search-macos-arm64 /some/path --output mydata
+
+# Python 脚本示例
 python app.py /some/path --output mydata
 
 # 只生成树状结构
@@ -130,22 +178,22 @@ python app.py --help
 
 ## 打包说明
 
-### 自动构建（推荐）
+### 下载预编译版本（推荐）
 
-项目已配置 GitHub Actions，可自动为所有平台构建可执行文件：
+访问 [Releases](https://github.com/mflix-team/deep-search/releases) 页面下载最新版本的可执行文件。
 
-1. **推送版本标签触发构建**：
-   ```bash
-   git tag v1.0.0
-   git push origin v1.0.0
-   ```
+每次推送新标签时，GitHub Actions 会自动构建所有平台的可执行文件并发布到 Releases。
 
-2. **下载构建文件**：
-   - 访问 [Actions](https://github.com/mflix-team/deep-search/actions) 页面
-   - 下载对应平台的 Artifacts：
-     - `deep-search-windows-latest` (Windows .exe)
-     - `deep-search-macos-latest` (macOS)
-     - `deep-search-ubuntu-latest` (Linux)
+### 自动构建新版本
+
+项目维护者可以通过推送标签触发自动构建：
+
+```bash
+git tag v1.1.0
+git push origin v1.1.0
+```
+
+构建完成后会自动创建 Release 并上传可执行文件。
 
 ### 本地打包
 
