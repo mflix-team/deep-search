@@ -53,16 +53,50 @@ jobs:
             --console `
             app.py
 
-      - name: Upload artifact (Linux/macOS)
-        if: runner.os != 'Windows'
-        uses: actions/upload-artifact@v4
-        with:
-          name: deep-search-${{ matrix.os }}
-          path: dist/deep-search
+      - name: Rename executables
+        shell: bash
+        run: |
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            mv dist/deep-search.exe dist/deep-search-windows-x64.exe
+          elif [ "${{ runner.os }}" = "macOS" ]; then
+            mv dist/deep-search dist/deep-search-macos-arm64
+          else
+            mv dist/deep-search dist/deep-search-linux-x64
+          fi
 
-      - name: Upload artifact (Windows)
-        if: runner.os == 'Windows'
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: deep-search-${{ matrix.os }}
-          path: dist/deep-search.exe
+          path: dist/deep-search-*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Display structure of downloaded files
+        run: ls -R artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/deep-search-ubuntu-latest/deep-search-linux-x64
+            artifacts/deep-search-windows-latest/deep-search-windows-x64.exe
+            artifacts/deep-search-macos-latest/deep-search-macos-arm64
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
