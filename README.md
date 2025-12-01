@@ -130,44 +130,44 @@ python app.py --help
 
 ## 打包说明
 
-### ⚠️ 重要：跨平台打包限制
+### 自动构建（推荐）
 
-PyInstaller 打包的可执行文件是**平台特定**的，必须在目标操作系统上打包：
+项目已配置 GitHub Actions，可自动为所有平台构建可执行文件：
 
-- **macOS**: 使用 `./build.sh` → 生成 `dist/deep-search`
-- **Windows**: 使用 `build.bat` → 生成 `dist\deep-search.exe`
-- **Linux**: 使用 `./build.sh` → 生成 `dist/deep-search`
+1. **推送版本标签触发构建**：
+   ```bash
+   git tag v1.0.0
+   git push origin v1.0.0
+   ```
 
-详细的跨平台打包说明请查看 [CROSS_PLATFORM.md](CROSS_PLATFORM.md)
+2. **下载构建文件**：
+   - 访问 [Actions](https://github.com/mflix-team/deep-search/actions) 页面
+   - 下载对应平台的 Artifacts：
+     - `deep-search-windows-latest` (Windows .exe)
+     - `deep-search-macos-latest` (macOS)
+     - `deep-search-ubuntu-latest` (Linux)
 
-### macOS / Linux 打包
+### 本地打包
 
+如需在本地打包，PyInstaller 打包的可执行文件是**平台特定**的：
+
+**macOS / Linux**:
 ```bash
-# 使用提供的脚本
 chmod +x build.sh
 ./build.sh
 ```
 
-### Windows 打包
-
+**Windows**:
 ```cmd
 build.bat
 ```
 
-### 手动打包（所有平台）
-
+**手动打包**:
 ```bash
-pyinstaller --onefile \
-    --name deep-search \
-    --add-data "requirements.txt:." \
-    --hidden-import colorama \
-    --hidden-import tqdm \
-    --hidden-import orjson \
-    --console \
-    app.py
+pyinstaller --onefile --name deep-search --console app.py
 ```
 
-打包后的可执行文件位于 `dist/` 目录，可以直接运行，无需安装Python环境。
+打包后的可执行文件位于 `dist/` 目录，可以直接运行，无需安装 Python 环境。
 
 ## 许可证
 
