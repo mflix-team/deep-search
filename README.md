@@ -38,6 +38,7 @@ python app.py
 ### 使用可执行文件
 
 **Windows**:
+
 ```cmd
 # 扫描当前目录
 deep-search-windows-x64.exe
@@ -50,6 +51,7 @@ deep-search-windows-x64.exe C:\path\to\scan --output mydata -v
 ```
 
 **macOS**:
+
 ```bash
 # 添加执行权限（仅首次）
 chmod +x deep-search-macos-arm64
@@ -65,6 +67,7 @@ chmod +x deep-search-macos-arm64
 ```
 
 **Linux**:
+
 ```bash
 # 添加执行权限（仅首次）
 chmod +x deep-search-linux-x64
@@ -129,6 +132,7 @@ python app.py --help
 ## 输出示例
 
 ### 树状结构示例
+
 ```json
 {
   "name": "project",
@@ -146,6 +150,7 @@ python app.py --help
 ```
 
 ### 平面列表示例
+
 ```json
 [
   {
@@ -200,17 +205,20 @@ git push origin v1.1.0
 如需在本地打包，PyInstaller 打包的可执行文件是**平台特定**的：
 
 **macOS / Linux**:
+
 ```bash
 chmod +x build.sh
 ./build.sh
 ```
 
 **Windows**:
+
 ```cmd
 build.bat
 ```
 
 **手动打包**:
+
 ```bash
 pyinstaller --onefile --name deep-search --console app.py
 ```
