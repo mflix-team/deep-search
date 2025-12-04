@@ -39,10 +39,11 @@ def scan_directory(path, pbar=None):
     """
     递归扫描目录，返回所有文件和文件夹的结构
     """
+    is_dir = os.path.isdir(path)
     result = {
         'name': os.path.basename(path) or path,
         'path': str(path),
-        'type': 'directory' if os.path.isdir(path) else 'file'
+        'type': 'directory' if is_dir else 'file'
     }
     
     if pbar:
@@ -89,17 +90,17 @@ def scan_directory(path, pbar=None):
 
 def scan_directory_flat(path, show_progress=True):
     """
-    递归扫描目录，返回所有文件的平面列表
+    递归扫描目录，返回所有文件和文件夹的平面列表
     """
-    files = []
+    items = []
     errors = []
     
     try:
         # 预计算总数用于进度条
         if show_progress:
-            logger.info("正在计算文件总数...")
-            total_files = sum([len(filenames) for _, _, filenames in os.walk(path)])
-            pbar = tqdm(total=total_files, desc="扫描文件", unit="个文件", 
+            logger.info("正在计算项目总数...")
+            total_items = sum([len(filenames) + len(dirnames) for _, dirnames, filenames in os.walk(path)])
+            pbar = tqdm(total=total_items, desc="扫描项目", unit="项", 
                        bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]')
         else:
             pbar = None
@@ -108,18 +109,44 @@ def scan_directory_flat(path, show_progress=True):
             # 排除隐藏文件夹（可选）
             # dirs[:] = [d for d in dirs if not d.startswith('.')]
             
-            logger.debug(f"进入目录: {root} (包含 {len(filenames)} 个文件)")
+            logger.debug(f"进入目录: {root} (包含 {len(dirs)} 个文件夹, {len(filenames)} 个文件)")
             
+            # 处理文件夹
+            for dirname in dirs:
+                try:
+                    full_path = os.path.join(root, dirname)
+                    relative_path = os.path.relpath(full_path, path)
+                    
+                    items.append({
+                        'name': dirname,
+                        'path': full_path,
+                        'relative_path': relative_path,
+                        'type': 'directory'
+                    })
+                    
+                    if pbar:
+                        pbar.update(1)
+                        pbar.set_postfix_str(f"当前: {dirname[:30]}...")
+                    
+                    logger.debug(f"已添加目录: {relative_path}")
+                    
+                except Exception as e:
+                    error_msg = f"处理文件夹 {dirname} 时出错: {e}"
+                    errors.append(error_msg)
+                    logger.error(error_msg)
+            
+            # 处理文件
             for filename in filenames:
                 try:
                     full_path = os.path.join(root, filename)
                     relative_path = os.path.relpath(full_path, path)
                     file_size = os.path.getsize(full_path) if os.path.exists(full_path) else 0
                     
-                    files.append({
+                    items.append({
                         'name': filename,
                         'path': full_path,
                         'relative_path': relative_path,
+                        'type': 'file',
                         'size': file_size
                     })
                     
@@ -127,7 +154,7 @@ def scan_directory_flat(path, show_progress=True):
                         pbar.update(1)
                         pbar.set_postfix_str(f"当前: {filename[:30]}...")
                     
-                    logger.debug(f"已添加: {relative_path} ({file_size} bytes)")
+                    logger.debug(f"已添加文件: {relative_path} ({file_size} bytes)")
                     
                 except Exception as e:
                     error_msg = f"处理文件 {filename} 时出错: {e}"
@@ -144,7 +171,7 @@ def scan_directory_flat(path, show_progress=True):
     if errors:
         logger.warning(f"扫描过程中遇到 {len(errors)} 个错误")
     
-    return files
+    return items
 
 
 if __name__ == '__main__':
@@ -262,7 +289,7 @@ if __name__ == '__main__':
     # 方式2: 平面列表
     if not args.tree_only:
         print(f"\n{Fore.MAGENTA}{'=' * 60}")
-        print(f"📋 方式2: 文件平面列表")
+        print(f"📋 方式2: 项目平面列表")
         print(f"{'=' * 60}{Style.RESET_ALL}")
         
         logger.info("开始生成平面列表...")
@@ -279,22 +306,29 @@ if __name__ == '__main__':
             f.write(flat_json)
         
         file_size = os.path.getsize(list_filename)
-        print(f"{Fore.GREEN}✓ 文件列表已保存到: {Fore.YELLOW}{list_filename}{Style.RESET_ALL} ({file_size:,} bytes)")
-        logger.info(f"文件列表已保存: {list_filename} ({file_size} bytes)")
+        print(f"{Fore.GREEN}✓ 项目列表已保存到: {Fore.YELLOW}{list_filename}{Style.RESET_ALL} ({file_size:,} bytes)")
+        logger.info(f"项目列表已保存: {list_filename} ({file_size} bytes)")
         
         # 统计信息
         print(f"\n{Fore.CYAN}{'=' * 60}")
         print(f"📈 统计信息")
         print(f"{'=' * 60}{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}总文件数:{Style.RESET_ALL} {Fore.YELLOW}{len(flat_list):,}{Style.RESET_ALL}")
         
-        total_size = sum(f['size'] for f in flat_list)
+        # 分别统计文件和文件夹
+        files = [item for item in flat_list if item['type'] == 'file']
+        directories = [item for item in flat_list if item['type'] == 'directory']
+        
+        print(f"{Fore.CYAN}总项目数:{Style.RESET_ALL} {Fore.YELLOW}{len(flat_list):,}{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}  - 文件夹:{Style.RESET_ALL} {Fore.YELLOW}{len(directories):,}{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}  - 文件:{Style.RESET_ALL} {Fore.YELLOW}{len(files):,}{Style.RESET_ALL}")
+        
+        total_size = sum(f.get('size', 0) for f in files)
         print(f"{Fore.CYAN}总大小:{Style.RESET_ALL} {Fore.YELLOW}{total_size:,}{Style.RESET_ALL} bytes "
               f"({Fore.YELLOW}{total_size / 1024 / 1024:.2f}{Style.RESET_ALL} MB)")
         
         # 文件类型统计
         extensions = {}
-        for f in flat_list:
+        for f in files:
             ext = os.path.splitext(f['name'])[1] or '(无扩展名)'
             extensions[ext] = extensions.get(ext, 0) + 1
         
@@ -302,7 +336,7 @@ if __name__ == '__main__':
         for ext, count in sorted(extensions.items(), key=lambda x: x[1], reverse=True)[:10]:
             print(f"  {Fore.YELLOW}{ext:20s}{Style.RESET_ALL}: {count:,} 个")
         
-        logger.info(f"扫描完成: {len(flat_list)} 个文件, 总大小 {total_size} bytes")
+        logger.info(f"扫描完成: {len(directories)} 个文件夹, {len(files)} 个文件, 总大小 {total_size} bytes")
     
     print(f"\n{Fore.GREEN}{'=' * 60}")
     print(f"✓ 扫描完成!")

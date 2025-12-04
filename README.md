@@ -140,6 +140,12 @@ python app.py --help
   "type": "directory",
   "children": [
     {
+      "name": "src",
+      "path": "/path/to/project/src",
+      "type": "directory",
+      "children": []
+    },
+    {
       "name": "app.py",
       "path": "/path/to/project/app.py",
       "type": "file",
@@ -154,9 +160,16 @@ python app.py --help
 ```json
 [
   {
+    "name": "src",
+    "path": "/path/to/project/src",
+    "relative_path": "src",
+    "type": "directory"
+  },
+  {
     "name": "app.py",
     "path": "/path/to/project/app.py",
     "relative_path": "app.py",
+    "type": "file",
     "size": 3191
   }
 ]
